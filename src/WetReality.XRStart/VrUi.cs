@@ -37,8 +37,12 @@ public sealed partial class XRStart
     private bool vrUiWanted = true;
 
     // cfg UiDistance (m) und UiScale (Kindknoten), PWS2-Namen; Vorgaben 2 und 0,3627.
-    private float UiDistance => Math.Max(0.5f, prefUiDistance?.Value ?? 2f);
-    private float UiScale => Math.Max(0.05f, prefUiScale?.Value ?? 0.3627f);
+    private float UiDistance => InMainMenu()
+        ? Math.Max(0.5f, prefMenuUiDistance?.Value ?? 0.9f)
+        : Math.Max(0.5f, prefUiDistance?.Value ?? 2f);
+    private float UiScale => InMainMenu()
+        ? Math.Max(0.05f, prefMenuUiScale?.Value ?? 0.42f)
+        : Math.Max(0.05f, prefUiScale?.Value ?? 0.3627f);
     private static readonly string[] ZTestProperties = { "unity_GUIZTestMode", "_ZTestMode", "_ZTest" };
     private const int CompareAlways = 8, CompareLessEqual = 4;
 
@@ -129,7 +133,12 @@ public sealed partial class XRStart
             {
                 bool modeLost = root.renderMode != RenderMode.ScreenSpaceCamera;
                 bool camLost = root.worldCamera == null || root.worldCamera.Pointer != cam.Pointer;
-                if (!modeLost && !camLost) { ApplyUiScale(); return; }
+                if (!modeLost && !camLost)
+                {
+                    root.planeDistance = UiDistance;
+                    ApplyUiScale();
+                    return;
+                }
                 LoggerInstance.Msg($"VR-UI: Umstellung verloren ({(modeLost ? "renderMode=" + root.renderMode : "worldCamera")}) - neu angewandt");
             }
             if (!uiCaptured)

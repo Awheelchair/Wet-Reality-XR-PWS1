@@ -58,6 +58,7 @@ public sealed partial class XRStart
     private MelonPreferences_Entry<bool> prefLadderTeleport = null!;
     private MelonPreferences_Entry<float> prefLadderTopOffset = null!;
     private MelonPreferences_Entry<float> prefTurnSpeed = null!, prefHapticIntensity = null!, prefUiScale = null!, prefUiDistance = null!;
+    private MelonPreferences_Entry<float> prefMenuUiScale = null!, prefMenuUiDistance = null!;
     private MelonPreferences_Entry<bool> prefSprayHaptics = null!;
     private MelonPreferences_Entry<string> prefHandRPos = null!, prefHandRRot = null!, prefHandLPos = null!, prefHandLRot = null!;
 
@@ -118,13 +119,15 @@ public sealed partial class XRStart
         prefHapticIntensity = cat.CreateEntry("HapticIntensity", 1f, description: "Faktor fuer alle Spruehvibrationen, 1 = Vorgabe");
         prefUiScale = cat.CreateEntry("UiScale", 0.3627f, description: "Groesse der Spiel-UI im Headset (Skalierung der Kindknoten)");
         prefUiDistance = cat.CreateEntry("UiDistance", 2f, description: "Meter. Abstand der Spiel-UI im Headset");
+        prefMenuUiScale = cat.CreateEntry("MenuUiScale", 0.42f, description: "Groesse der Hauptmenue-UI im Headset");
+        prefMenuUiDistance = cat.CreateEntry("MenuUiDistance", 0.9f, description: "Meter. Abstand der Hauptmenue-UI im Headset");
         // Namen wie PWS2 - fuer den spaeteren Konfigurator.
         prefComfortTeleport = cat.CreateEntry("ComfortTeleport", false, description: "Komfort: linker Stick nach vorn teleportiert aus der linken Hand und ersetzt das Gehen. Der Ziel-Teleport auf der Pistolenhand wirkt immer.");
         prefTeleportJumpSpeed = cat.CreateEntry("TeleportJumpSpeed", 7f, description: "m/s. Waagerechtes Tempo der Sprungparabel, die die Teleportweite begrenzt (PWS2 gemessen: 7,0 mit Sprint)");
         prefTeleportSlopeWalk = cat.CreateEntry("TeleportSlopeWalk", true, description: "Treppe/Rampe als Weg (PWS2 Abschnitt 159): liegt das Ziel ueber der Kantengrenze, wird der Boden vom Fuss dorthin in 0,18-m-Schritten abgegangen; jede Stufe <= 0,45 m hoch ist ein Weg.");
         prefLadderTeleport = cat.CreateEntry("LadderTeleport", true, description: "Auf eine aufgestellte Leiter gezielt = oben ankommen statt an der Sprosse (PWS2); die eine Ausnahme von der Hoehengrenze.");
         prefLadderTopOffset = cat.CreateEntry("LadderTopOffset", 0.35f, description: "Meter weg von der Leiter oben, damit man auf dem Dach steht und nicht an der Sprosse haengt.");
-        LoggerInstance.Msg($"TESTUMGEBUNG: DevMode={dev} DevHotkeys={prefDevHotkeys.Value} (wirksam {devKeys}) AutoStart={prefAutoStart.Value} SkipLoadingContinue={prefSkipContinue.Value} DevCheats={prefCheats.Value} DesktopMirror={prefMirror.Value} InteractionRange={prefInteractionRange.Value:F1} ShowVrHands={prefHands.Value} HandRight {prefHandRPos.Value} / {prefHandRRot.Value} HandLeft {prefHandLPos.Value} / {prefHandLRot.Value} SkyFix={prefSkyFix.Value} SkyColor={prefSkyColor.Value} ComfortTeleport={prefComfortTeleport.Value} TeleportJumpSpeed={prefTeleportJumpSpeed.Value:F1} TeleportSlopeWalk={prefTeleportSlopeWalk.Value} PointerColor={prefPointerColor.Value} PointerAlpha={prefPointerAlpha.Value:F2} TurnSpeed={prefTurnSpeed.Value:F0} SprayHaptics={prefSprayHaptics.Value} HapticIntensity={prefHapticIntensity.Value:F2} UiScale={prefUiScale.Value:F4} UiDistance={prefUiDistance.Value:F2}");
+        LoggerInstance.Msg($"TESTUMGEBUNG: DevMode={dev} DevHotkeys={prefDevHotkeys.Value} (wirksam {devKeys}) AutoStart={prefAutoStart.Value} SkipLoadingContinue={prefSkipContinue.Value} DevCheats={prefCheats.Value} DesktopMirror={prefMirror.Value} InteractionRange={prefInteractionRange.Value:F1} ShowVrHands={prefHands.Value} HandRight {prefHandRPos.Value} / {prefHandRRot.Value} HandLeft {prefHandLPos.Value} / {prefHandLRot.Value} SkyFix={prefSkyFix.Value} SkyColor={prefSkyColor.Value} ComfortTeleport={prefComfortTeleport.Value} TeleportJumpSpeed={prefTeleportJumpSpeed.Value:F1} TeleportSlopeWalk={prefTeleportSlopeWalk.Value} PointerColor={prefPointerColor.Value} PointerAlpha={prefPointerAlpha.Value:F2} TurnSpeed={prefTurnSpeed.Value:F0} SprayHaptics={prefSprayHaptics.Value} HapticIntensity={prefHapticIntensity.Value:F2} UiScale={prefUiScale.Value:F4} UiDistance={prefUiDistance.Value:F2} MenuUiScale={prefMenuUiScale.Value:F4} MenuUiDistance={prefMenuUiDistance.Value:F2}");
         LoggerInstance.Msg(devKeys
             ? "Entwicklungstasten AN: F8 XR an/aus, F7 Kopf schreiben, F6 Schreibpunkt LateUpdate/Render, F5 Pistole schreiben, F4 PWS2-Korrekturen, F3 Controller-Steuerung, F9 20 s Kopfmessung, F1 Spiegel gameViewRenderMode, F2 Himmel, F10 UI im Headset, F11 Menue-Ziel"
             : "Entwicklungstasten AUS (DevMode/DevHotkeys) - F1-F11 ohne Wirkung");
