@@ -120,6 +120,9 @@ public sealed partial class XRStart
     private static bool r3Was, gripLWheelWas, gripRWheelWas;
     private static float yDownAt = -1f;
     private static bool yLongSent;
+private static float yTapReleasedAt = -1f;
+private static bool yTapPending;
+private const float YDoubleTapSeconds = 0.35f;
     private static int wheelInputCalls;
     private const float WheelHoldSeconds = 0.25f, YHoldSeconds = 0.5f;
     private static float r3DownAt = -1f;
@@ -243,26 +246,68 @@ public sealed partial class XRStart
         if (wheelOpen && gr && !gripRWheelWas) SwitchWheel(pi, +1);
         gripLWheelWas = gl; gripRWheelWas = gr;
 
-        // ---- Y: kurz Inventar, lang naechster Washer
-        bool y = Held(l, "secondaryButton");
-        if (y && yDownAt < 0f) { yDownAt = now; yLongSent = false; }
-        // In die Griff-Kalibrierung gefallen (Grip.cs): dieser Y-Druck tut nichts, auch beim Loslassen.
-        if (y && yDownAt >= 0f && CalibrateSuppressed) yLongSent = true;
-        if (y && yDownAt >= 0f && !yLongSent && now - yDownAt >= YHoldSeconds)
+        // ---- Y: double tap = wrist menu, kurz = Inventar, lang = naechster Washer
+bool y = Held(l, "secondaryButton");
+
+// If the first short press wasn't followed by a second tap,
+// perform the normal inventory action after the double-tap window.
+if (yTapPending && now - yTapReleasedAt > YDoubleTapSeconds)
+{
+    yTapPending = false;
+    self?.ToggleInventory(pi);
+}
+
+if (y && yDownAt < 0f)
+{
+    yDownAt = now;
+    yLongSent = false;
+
+    // Second tap: open or close the wrist configuration menu.
+    if (yTapPending && now - yTapReleasedAt <= YDoubleTapSeconds)
+    {
+        yTapPending = false;
+        yLongSent = true;
+
+        if (self != null)
+            self.vrConfigOpen = !self.vrConfigOpen;
+    }
+}
+
+// In die Griff-Kalibrierung gefallen: dieser Y-Druck tut nichts.
+if (y && yDownAt >= 0f && CalibrateSuppressed)
+    yLongSent = true;
+
+// Long press: next washer.
+if (y && yDownAt >= 0f && !yLongSent && now - yDownAt >= YHoldSeconds)
+{
+    yLongSent = true;
+
+    if (Free(pi, "Y lang Washer"))
+    {
+        var sg = pi.SwitchGun;
+        if (sg == null)
+            btnEvents.Add("Y lang: SwitchGun ist null (niemand hoert zu)");
+        else
         {
-            yLongSent = true;
-            if (Free(pi, "Y lang Washer"))
-            {
-                var sg = pi.SwitchGun;
-                if (sg == null) btnEvents.Add("Y lang: SwitchGun ist null (niemand hoert zu)");
-                else { sg.Invoke(1); btnEvents.Add("Y lang: SwitchGun(+1) - naechster Washer"); Buzz(false, "Washer gewechselt"); }
-            }
+            sg.Invoke(1);
+            btnEvents.Add("Y lang: SwitchGun(+1) - naechster Washer");
+            Buzz(false, "Washer gewechselt");
         }
-        if (!y && yDownAt >= 0f)
-        {
-            if (!yLongSent) self?.ToggleInventory(pi);
-            yDownAt = -1f;
-        }
+    }
+}
+
+// Button released.
+if (!y && yDownAt >= 0f)
+{
+    if (!yLongSent)
+    {
+        // Delay inventory briefly so a second tap can be detected.
+        yTapPending = true;
+        yTapReleasedAt = now;
+    }
+
+    yDownAt = -1f;
+}
     }
 
     private static void OpenWheel(Il2CppPWS.PlayerInput pi, EquipmentType type)

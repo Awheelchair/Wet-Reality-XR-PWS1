@@ -425,9 +425,30 @@ public sealed partial class XRStart : MelonMod
             LoggerInstance.Error("onBeforeRender: nicht angemeldet - " + e);
         }
     }
+    private void EnsureLocalBodyVisible()
+    {
+        try
+        {
+            var cam = Camera.main;
+            if (cam == null || cam.name != "PlayerCamera") return;
 
+            int bit = 1 << (int)GameLayer.LocalCharacterVisuals;
+
+            if ((cam.cullingMask & bit) == 0)
+            {
+                cam.cullingMask |= bit;
+                LoggerInstance.Msg(
+                    $"VR BODY: LocalCharacterVisuals aktiviert, Kamera={cam.name}, Maske=0x{cam.cullingMask:X8}");
+            }
+        }
+        catch (Exception e)
+        {
+            LoggerInstance.Warning("VR BODY: Culling-Maske " + e.GetType().Name + ": " + e.Message);
+        }
+    }
     private static void OnBeforeRender()
     {
+        EnsureLocalBodyVisible();
         self?.BeforeRender();
         // Nur der erste Aufruf des Messframes: das ist der Stand, mit dem
         // gerendert wird.
@@ -453,6 +474,8 @@ public sealed partial class XRStart : MelonMod
         // Pistole nach dem Kopf: sie rechnet aus der Kamera, die der Kopf eben gesetzt hat.
         if (writeGun) { DriveGun(); ApplyGunFixes(); }
         DriveVrHands();   // nach Kopf und Pistole, dieselbe Kamera (VrHands.cs)
+        EnsureVrConfigMenu();
+        DriveVrConfigMenu();
         DriveHandPoses(); // Parameter wirken im naechsten Animator-Takt (HandPoses.cs)
         DriveTeleport();  // Bogen aus der drueckenden Hand (Teleport.cs)
         PlaceSkyCube();   // Himmelswuerfel um die finale Kamera (SkyCube.cs)
@@ -929,6 +952,7 @@ public sealed partial class XRStart : MelonMod
         StopWriting("XR-Stopp " + why);
         var manager = DescribeManager("vor dem Stopp (" + why + ")");
         started = false;
+        vrConfigOpen = false;
         reportUntil = 0f;
         RestoreOutline();   // Umriss-Effekt wieder an (LevelCamera.cs)
         if (manager == null) return;
